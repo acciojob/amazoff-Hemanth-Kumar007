@@ -122,7 +122,6 @@ public class RepositoryLayer {
     }
 
     public void deleteOrderById(String orderId){
-        if(ordersNotAssignedDb.contains(orderId)) ordersNotAssignedDb.add(orderId);
 
         Order order = orderDb.get(orderId);
         for(String partner : addOrderPartnerDb.keySet()){
@@ -130,6 +129,7 @@ public class RepositoryLayer {
             list.remove(order);
         }
 
+        if(ordersNotAssignedDb.contains(orderId)) ordersNotAssignedDb.add(orderId);
         if(orderDb.containsKey(orderId)) orderDb.remove(orderId);
     }
 }
