@@ -12,7 +12,7 @@ public class RepositoryLayer {
 
     HashMap<String, Order> orderDb = new HashMap<>();
     HashMap<String, DeliveryPartner> deliveryPartnerDb = new HashMap<>();
-    HashMap<String, List<Order>> addOrderPartnerDb = new HashMap<>();
+    HashMap<String, List<String>> addOrderPartnerDb = new HashMap<>();
 
     HashSet<String> ordersNotAssignedDb = new HashSet<>();
 
@@ -27,9 +27,9 @@ public class RepositoryLayer {
     }
 
     public void addOrderPartnerPair(String orderId, String partnerId){
-        List<Order> list = addOrderPartnerDb.getOrDefault(partnerId, new ArrayList<>());
-        Order order = orderDb.get(orderId);
-        list.add(order);
+        List<String> list = addOrderPartnerDb.getOrDefault(partnerId, new ArrayList<>());
+        //Order order = orderDb.get(orderId);
+        list.add(orderId);
         addOrderPartnerDb.put(partnerId, list);
         DeliveryPartner partner = deliveryPartnerDb.get(partnerId);
         Integer noOfOrders = partner.getNumberOfOrders();
@@ -47,17 +47,18 @@ public class RepositoryLayer {
     }
 
     public Integer getOrderCountByPartnerId(String partnerId){
-        List<Order> list = addOrderPartnerDb.get(partnerId);
+        List<String> list = addOrderPartnerDb.get(partnerId);
         return list.size();
     }
 
     public List<String> getOrdersByPartnerId(String partnerId){
-        List<Order> list = addOrderPartnerDb.get(partnerId);
-        List<String> strList = new ArrayList<>();
-        for(Order order : list){
-            strList.add(order.getId());
-        }
-        return strList;
+//        List<String> list = addOrderPartnerDb.get(partnerId);
+//        List<String> strList = new ArrayList<>();
+//        for(Order order : list){
+//            strList.add(order.getId());
+//        }
+//        return strList;
+        return addOrderPartnerDb.get(partnerId);
     }
 
     public List<String> getAllOrders(){
@@ -78,23 +79,23 @@ public class RepositoryLayer {
         Integer min = Integer.parseInt(arr[1]);
         Integer totalTime = hr*60+min;
 
-        List<Order> list = addOrderPartnerDb.getOrDefault(partnerId, new ArrayList<>());
+        List<String> list = addOrderPartnerDb.getOrDefault(partnerId, new ArrayList<>());
         if(list.size() == 0) return 0;
 
         int count = 0;
-        for(Order order : list){
-            if(order.getDeliveryTime() > totalTime) count++;
+        for(String order : list){
+            if(orderDb.get(order).getDeliveryTime() > totalTime) count++;
         }
 
         return count;
     }
 
     public String getLastDeliveryTimeByPartnerId(String partnerId){
-        List<Order> list = addOrderPartnerDb.getOrDefault(partnerId, new ArrayList<>());
+        List<String> list = addOrderPartnerDb.getOrDefault(partnerId, new ArrayList<>());
         if(list.size() == 0) return "00:00";
         Integer max = 0;
-        for(Order order : list){
-            max = Math.max(order.getDeliveryTime(), max);
+        for(String order : list){
+            max = Math.max(orderDb.get(order).getDeliveryTime(), max);
         }
 
         Integer hr = max/60;
@@ -111,10 +112,10 @@ public class RepositoryLayer {
     }
 
     public void deletePartnerById(String partnerId){
-        List<Order> list = addOrderPartnerDb.get(partnerId);
+        List<String> list = addOrderPartnerDb.get(partnerId);
         if(list.size() > 0) {
-            for (Order order : list) {
-                ordersNotAssignedDb.add(order.getId());
+            for (String order : list) {
+                ordersNotAssignedDb.add(orderDb.get(order).getId());
             }
         }
         addOrderPartnerDb.remove(partnerId);
@@ -123,13 +124,18 @@ public class RepositoryLayer {
 
     public void deleteOrderById(String orderId){
 
-        Order order = orderDb.get(orderId);
-        for(String partner : addOrderPartnerDb.keySet()){
-            List<Order> list = addOrderPartnerDb.get(partner);
-            list.remove(order);
-        }
+      //  Order order = orderDb.get(orderId);
+        if(orderDb.containsKey(orderId)){
+            if(ordersNotAssignedDb.contains(orderId)){
+                ordersNotAssignedDb.remove(orderId);
+            }
+            else{
 
-        if(ordersNotAssignedDb.contains(orderId)) ordersNotAssignedDb.add(orderId);
-        if(orderDb.containsKey(orderId)) orderDb.remove(orderId);
+                for(String str : addOrderPartnerDb.keySet()){
+                    List<String> list=addOrderPartnerDb.get(str);
+                    list.remove(orderId);
+                }
+            }
+        }
     }
 }
