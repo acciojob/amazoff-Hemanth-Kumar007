@@ -8,8 +8,10 @@ import java.util.List;
 @Service
 public class ServiceLayer {
 
-    @Autowired
-    private RepositoryLayer repositoryLayerObj;
+//    @Autowired
+//    private RepositoryLayer repositoryLayerObj;
+
+    RepositoryLayer repositoryLayerObj = new RepositoryLayer();
 
     public void addOrder(Order order){
 
